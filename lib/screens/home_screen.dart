@@ -1,3 +1,4 @@
+import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -268,75 +269,79 @@ class HomeScreen extends StatelessWidget {
   }
 
   Future<void> _pickFiles(BuildContext context) async {
-    final provider = context.read<AppProvider>();
+  final provider = context.read<AppProvider>();
 
-    // گرفتن مجوز دسترسی
-    var status = await Permission.manageExternalStorage.status;
+  // ۱. گرفتن مجوز دسترسی به فایل‌ها (برای اندروید ۱۳ و ۱۴)
+  var status = await Permission.manageExternalStorage.status;
+  if (!status.isGranted) {
+    status = await Permission.manageExternalStorage.request();
+    
+    // اگر باز هم اجازه نداد، مجوز قدیمی‌تر (storage) را چک می‌کنیم
     if (!status.isGranted) {
-      status = await Permission.manageExternalStorage.request();
-      if (!status.isGranted) {
-        var storageStatus = await Permission.storage.status;
-        if (!storageStatus.isGranted) {
-          storageStatus = await Permission.storage.request();
+      var storageStatus = await Permission.storage.status;
+      if (!storageStatus.isGranted) {
+        storageStatus = await Permission.storage.request();
+      }
+      
+      // اگر هیچ‌کدام اجازه ندادند، پیام می‌دهیم و به تنظیمات می‌فرستیم
+      if (!storageStatus.isGranted) {
+        if (context.mounted) {
+          _showSnack(context, 'برای خواندن فایل‌ها، باید به برنامه اجازه دسترسی به حافظه بدهید.', AppConstants.dangerColor);
+          await openAppSettings(); // باز کردن تنظیمات گوشی
         }
-        if (!storageStatus.isGranted) {
-          if (context.mounted) {
-            _showSnack(context, 'برای خواندن فایل‌ها، دسترسی به حافظه لازم است.', AppConstants.dangerColor);
-            await openAppSettings();
-          }
-          return;
+        return;
+      }
+    }
+  }
+
+  // ۲. باز کردن پنجره انتخاب فایل
+  try {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['xlsx', 'xls'],
+      allowMultiple: true,
+    );
+
+    if (result == null || result.files.isEmpty) return;
+
+    File? classFile;
+    File? scheduleFile;
+
+    for (final f in result.files) {
+      if (f.path == null) continue;
+      final name = f.name.toLowerCase();
+      
+      // فایل کلاس‌ها
+      if (name.contains('class')) {
+        classFile = File(f.path!);
+      } 
+      // فایل برنامه (all-class)
+      else if (name.contains('all-class') || name.contains('1405') || name.contains('all')) {
+        scheduleFile = File(f.path!);
+      } else {
+        if (classFile == null) {
+          classFile = File(f.path!);
+        } else {
+          scheduleFile = File(f.path!);
         }
       }
     }
 
-    try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['xlsx', 'xls'],
-        allowMultiple: true,
-      );
-
-      if (result == null || result.files.isEmpty) return;
-
-      File? classFile;
-      File? scheduleFile;
-
-      for (final f in result.files) {
-        if (f.path == null) continue;
-        final name = f.name.toLowerCase();
-        
-        // ۱. فایل کلاس‌ها
-        if (name.contains('class')) {
-          classFile = File(f.path!);
-        } 
-        // ۲. فایل برنامه دروس (با نام جدید all-class)
-        else if (name.contains('all-class') || name.contains('1405') || name.contains('all')) {
-          scheduleFile = File(f.path!);
-        } else {
-          if (classFile == null) {
-            classFile = File(f.path!);
-          } else {
-            scheduleFile = File(f.path!);
-          }
-        }
-      }
-
-      if (classFile == null || scheduleFile == null) {
-        if (context.mounted) {
-          _showSnack(context, 'لطفاً فایل اول را با نام class و فایل دوم را با نام all-class انتخاب کنید.', AppConstants.dangerColor);
-        }
-        return;
-      }
-
-      await provider.importFiles(classFile: classFile, scheduleFile: scheduleFile);
-
+    if (classFile == null || scheduleFile == null) {
       if (context.mounted) {
-        _showSnack(context, provider.statusMessage, AppConstants.successColor);
+        _showSnack(context, 'لطفاً فایل اول را با نام class و فایل دوم را با نام all-class انتخاب کنید.', AppConstants.dangerColor);
       }
-    } catch (e) {
-      if (context.mounted) {
-        _showSnack(context, 'خطا: $e', AppConstants.dangerColor);
-      }
+      return;
+    }
+
+    await provider.importFiles(classFile: classFile, scheduleFile: scheduleFile);
+
+    if (context.mounted) {
+      _showSnack(context, provider.statusMessage, AppConstants.successColor);
+    }
+  } catch (e) {
+    if (context.mounted) {
+      _showSnack(context, 'خطا: $e', AppConstants.dangerColor);
     }
   }
 }
