@@ -268,6 +268,7 @@ class HomeScreen extends StatelessWidget {
   Future<void> _pickFiles(BuildContext context) async {
     final provider = context.read<AppProvider>();
 
+    // درخواست دسترسی به حافظه
     var status = await Permission.manageExternalStorage.status;
     if (!status.isGranted) {
       status = await Permission.manageExternalStorage.request();
@@ -300,16 +301,22 @@ class HomeScreen extends StatelessWidget {
 
       for (final f in result.files) {
         if (f.path == null) continue;
-        final name = f.name.toLowerCase();
         
-        if (name.contains('class')) {
-          classFile = File(f.path!);
-        } else if (name.contains('all-class') || name.contains('1405') || name.contains('all')) {
+        final name = f.name.toLowerCase();
+
+        // ۱. فایل برنامه دروس (با نام جدید allprog)
+        if (name.contains('allprog')) {
           scheduleFile = File(f.path!);
-        } else {
+        } 
+        // ۲. فایل کلاس‌ها (با نام class)
+        else if (name.contains('class')) {
+          classFile = File(f.path!);
+        }
+        // پشتیبان (اگر کاربر اسم فایل را تغییر داده بود)
+        else {
           if (classFile == null) {
             classFile = File(f.path!);
-          } else {
+          } else if (scheduleFile == null) {
             scheduleFile = File(f.path!);
           }
         }
@@ -317,7 +324,7 @@ class HomeScreen extends StatelessWidget {
 
       if (classFile == null || scheduleFile == null) {
         if (context.mounted) {
-          _showSnack(context, 'لطفاً فایل اول را با نام class و فایل دوم را با نام all-class انتخاب کنید.', AppConstants.dangerColor);
+          _showSnack(context, 'لطفاً فایل اول را با نام class و فایل دوم را با نام allprog انتخاب کنید.', AppConstants.dangerColor);
         }
         return;
       }
