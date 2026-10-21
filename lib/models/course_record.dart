@@ -29,7 +29,6 @@ class CourseRecord {
     required this.sourceRow,
   });
 
-  /// متن نمایشی برای کارت‌ها
   String get displayText {
     final parts = <String>[courseName];
     if (teacher.isNotEmpty) parts.add(teacher);
@@ -38,7 +37,6 @@ class CourseRecord {
     return parts.join(' | ');
   }
 
-  /// متن کوتاه
   String get shortText => '$courseName\n$teacher';
 
   Map<String, dynamic> toMap() => {
@@ -57,6 +55,7 @@ class CourseRecord {
         'source_row': sourceRow,
       };
 
+  // 🚨 این بخش امن شده است تا دیتابیس به هیچ وجه Null برنگرداند
   factory CourseRecord.fromMap(Map<String, dynamic> map) => CourseRecord(
         id: map['id'] as int?,
         day: (map['day'] as String?) ?? '',
@@ -73,7 +72,6 @@ class CourseRecord {
         sourceRow: (map['source_row'] as int?) ?? 0,
       );
 
-  /// کلید یکتای این جلسه
   String get uniqueKey =>
       '$day|$timeSlot|$courseName|$teacher|$classroom|$group|$weekType|$sourceRow';
 }
