@@ -25,20 +25,16 @@ jobs:
           
       - name: Build APK
         run: |
-          # پیدا کردن مسیر پروژه
           PUBSPEC_PATH=$(find . -name "pubspec.yaml" | head -n 1)
           PROJECT_DIR=$(dirname "$PUBSPEC_PATH")
           cd "$PROJECT_DIR"
           
-          # گرفتن پکیج‌ها
           flutter pub get
           
-          # 🚨 پیدا کردن و پاک کردن هر خطی که به NDK اشاره دارد
-          echo "Removing NDK references from all gradle files..."
+          # 🚨 حذف کامل و بی‌رحمانه خط NDK از تمام فایل‌های گریدل
           find android -name "build.gradle*" -exec sed -i '/ndkVersion/d' {} +
           find android -name "build.gradle*" -exec sed -i '/ndkPath/d' {} +
           
-          # ساخت APK با نادیده گرفتن خطاهای نسخه
           flutter build apk --release --android-skip-build-dependency-validation
           
       - name: Upload APK
