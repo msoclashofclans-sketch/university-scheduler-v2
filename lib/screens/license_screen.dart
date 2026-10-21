@@ -1,7 +1,7 @@
-import 'splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/constants.dart';
+import 'splash_screen.dart'; // هدایت به صفحه شروع
 
 class LicenseScreen extends StatefulWidget {
   const LicenseScreen({super.key});
@@ -14,25 +14,51 @@ class _LicenseScreenState extends State<LicenseScreen> {
   final TextEditingController _licenseController = TextEditingController();
   bool _isChecking = false;
 
+  @override
+  void initState() {
+    super.initState();
+    // وقتی برنامه باز می‌شود، اول چک می‌کند آیا لایسنس معتبر است یا نه
+    _checkExistingLicense();
+  }
+
+  Future<void> _checkExistingLicense() async {
+    final prefs = await SharedPreferences.getInstance();
+    final expireDateStr = prefs.getString('license_expire_date');
+
+    if (expireDateStr != null) {
+      final expireDate = DateTime.parse(expireDateStr);
+      if (DateTime.now().isBefore(expireDate)) {
+        // اگر لایسنس هنوز معتبر است، مستقیم برو به برنامه
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const SplashScreen()),
+          );
+        }
+      }
+    }
+  }
+
   Future<void> _activateLicense() async {
     final code = _licenseController.text.trim();
-    // کد لایسنس فرضی (می‌توانی تغییرش دهی)
+    
+    // کد لایسنس اختصاصی شما
     if (code == 'MASOUD-2026-VIP') {
       setState(() => _isChecking = true);
       final prefs = await SharedPreferences.getInstance();
-      // ثبت تاریخ نصب و تاریخ انقضا (۴ ماه بعد)
+      
       final now = DateTime.now();
       final expireDate = now.add(const Duration(days: 120)); // ۱۲۰ روز ~ ۴ ماه
       
       await prefs.setString('license_expire_date', expireDate.toIso8601String());
       
       if (mounted) {
-  // هدایت مستقیم به صفحه اصلی پس از تایید لایسنس
-  Navigator.pushReplacement(
-    context,
-    MaterialPageRoute(builder: (context) => const SplashScreen()),
-  );
-}
+        // انتقال به صفحه اصلی
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const SplashScreen()),
+        );
+      }
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -47,7 +73,11 @@ class _LicenseScreenState extends State<LicenseScreen> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        appBar: AppBar(title: const Text('فعال‌سازی لایسنس'), backgroundColor: AppConstants.primaryColor, foregroundColor: Colors.white),
+        appBar: AppBar(
+          title: const Text('فعال‌سازی لایسنس'), 
+          backgroundColor: AppConstants.primaryColor, 
+          foregroundColor: Colors.white,
+        ),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -76,7 +106,7 @@ class _LicenseScreenState extends State<LicenseScreen> {
                     onPressed: _isChecking ? null : _activateLicense,
                     style: ElevatedButton.styleFrom(backgroundColor: AppConstants.primaryColor),
                     child: _isChecking 
-                      ? const CircularProgressIndicator(color: Colors.white)
+                      ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                       : const Text('فعال‌سازی', style: TextStyle(fontSize: 16)),
                   ),
                 ),
