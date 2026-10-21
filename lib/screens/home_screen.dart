@@ -1,9 +1,9 @@
-import 'teacher_stats_screen.dart
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:permission_handler/permission_handler.dart'; // اضافه شده برای رفع خطای Permission
 import '../providers/app_provider.dart';
 import '../providers/theme_provider.dart';
 import '../utils/constants.dart';
@@ -17,6 +17,7 @@ import 'teacher_screen.dart';
 import 'attendance_screen.dart';
 import 'reports_screen.dart';
 import 'settings_screen.dart';
+import 'teacher_stats_screen.dart'; // اضافه شده برای صفحه آمار
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -35,30 +36,18 @@ class HomeScreen extends StatelessWidget {
                   child: CustomScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     slivers: [
-                      SliverToBoxAdapter(child: _buildHeader(context, provider, themeProvider)),
+                      SliverToBoxAdapter(
+                        child: _buildHeader(context, provider, themeProvider),
+                      ),
                       SliverToBoxAdapter(child: _buildStats(provider)),
                       SliverPadding(
                         padding: const EdgeInsets.all(16),
                         sliver: SliverGrid(
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
                             mainAxisSpacing: 12,
                             crossAxisSpacing: 12,
                             childAspectRatio: 1.15,
-                          ),
-                          _menuCard(
-                            context,
-                            title: 'آمار اساتید',
-                            subtitle: 'تعداد دروس و واحد',
-                            icon: Icons.analytics_rounded,
-                            gradient: AppConstants.oceanGradient,
-                            onTap: () => Navigator.push(
-                              context,
-                              PageTransitions.slideFromRight(
-                                const TeacherStatsScreen(),
-                              ),
-                            ),
                           ),
                           delegate: SliverChildListDelegate([
                             _menuCard(
@@ -69,9 +58,7 @@ class HomeScreen extends StatelessWidget {
                               gradient: AppConstants.primaryGradient,
                               onTap: () => Navigator.push(
                                 context,
-                                PageTransitions.slideFromRight(
-                                  const ScheduleScreen(),
-                                ),
+                                PageTransitions.slideFromRight(const ScheduleScreen()),
                               ),
                             ),
                             _menuCard(
@@ -82,9 +69,7 @@ class HomeScreen extends StatelessWidget {
                               gradient: AppConstants.successGradient,
                               onTap: () => Navigator.push(
                                 context,
-                                PageTransitions.slideFromRight(
-                                  const ClassScreen(),
-                                ),
+                                PageTransitions.slideFromRight(const ClassScreen()),
                               ),
                             ),
                             _menuCard(
@@ -95,9 +80,7 @@ class HomeScreen extends StatelessWidget {
                               gradient: AppConstants.dangerGradient,
                               onTap: () => Navigator.push(
                                 context,
-                                PageTransitions.slideFromRight(
-                                  const TeacherScreen(),
-                                ),
+                                PageTransitions.slideFromRight(const TeacherScreen()),
                               ),
                             ),
                             _menuCard(
@@ -108,9 +91,7 @@ class HomeScreen extends StatelessWidget {
                               gradient: AppConstants.oceanGradient,
                               onTap: () => Navigator.push(
                                 context,
-                                PageTransitions.slideFromRight(
-                                  const AttendanceScreen(),
-                                ),
+                                PageTransitions.slideFromRight(const AttendanceScreen()),
                               ),
                             ),
                             _menuCard(
@@ -121,9 +102,18 @@ class HomeScreen extends StatelessWidget {
                               gradient: AppConstants.sunsetGradient,
                               onTap: () => Navigator.push(
                                 context,
-                                PageTransitions.slideFromRight(
-                                  const ReportsScreen(),
-                                ),
+                                PageTransitions.slideFromRight(const ReportsScreen()),
+                              ),
+                            ),
+                            _menuCard(
+                              context,
+                              title: 'آمار اساتید', // دکمه جدید
+                              subtitle: 'تعداد دروس',
+                              icon: Icons.bar_chart_rounded,
+                              gradient: const LinearGradient(colors: [Colors.teal, Colors.green]),
+                              onTap: () => Navigator.push(
+                                context,
+                                PageTransitions.slideFromRight(const TeacherStatsScreen()),
                               ),
                             ),
                             _menuCard(
@@ -134,24 +124,35 @@ class HomeScreen extends StatelessWidget {
                               gradient: AppConstants.purpleGradient,
                               onTap: () => Navigator.push(
                                 context,
-                                PageTransitions.slideFromRight(
-                                  const SettingsScreen(),
-                                ),
+                                PageTransitions.slideFromRight(const SettingsScreen()),
                               ),
                             ),
                           ]),
                         ),
                       ),
-                      const SliverToBoxAdapter(child: SizedBox(height: 30)),
+                      // نام سازنده در پایین صفحه
+                      const SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.only(top: 10, bottom: 30),
+                          child: Center(
+                            child: Text(
+                              'طراحی و توسعه: مسعود خسروی',
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
                 LoadingOverlay(
                   isLoading: provider.isLoading,
                   message: provider.statusMessage,
-                  progress: provider.loadingProgress > 0
-                      ? provider.loadingProgress
-                      : null,
+                  progress: provider.loadingProgress > 0 ? provider.loadingProgress : null,
                 ),
               ],
             );
@@ -168,166 +169,69 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // ==================== هدر ====================
-  Widget _buildHeader(
-    BuildContext context,
-    AppProvider provider,
-    ThemeProvider themeProvider,
-  ) {
+  Widget _buildHeader(BuildContext context, AppProvider provider, ThemeProvider themeProvider) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 48, 20, 24),
       decoration: const BoxDecoration(
         gradient: AppConstants.primaryGradient,
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(32),
-          bottomRight: Radius.circular(32),
-        ),
+        borderRadius: BorderRadius.only(bottomLeft: Radius.circular(32), bottomRight: Radius.circular(32)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Icon(
-                  Icons.school_rounded,
-                  color: Colors.white,
-                  size: 28,
-                ),
-              ),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'سامانه مدیریت کلاس‌ها',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      'حضور و غیاب اساتید',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              IconButton(
-                onPressed: themeProvider.toggleTheme,
-                icon: Icon(
-                  themeProvider.isDarkMode
-                      ? Icons.light_mode_rounded
-                      : Icons.dark_mode_rounded,
-                  color: Colors.white,
-                ),
-                tooltip: themeProvider.isDarkMode
-                    ? 'حالت روشن'
-                    : 'حالت تاریک',
-              ),
-            ],
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Icon(Icons.school_rounded, color: Colors.white, size: 28),
           ),
-         SliverToBoxAdapter(
-  child: Padding(
-    padding: const EdgeInsets.only(top: 30, bottom: 20),
-    child: Center(
-      child: Text(
-        'طراحی و توسعه: مسعود خسروی',
-        style: TextStyle(
-          color: Theme.of(context).brightness == Brightness.dark 
-              ? Colors.white54 
-              : Colors.grey.shade600,
-          fontSize: 13,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    ),
-  ),
-), 
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('سامانه مدیریت کلاس‌ها', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                Text('حضور و غیاب اساتید', style: TextStyle(color: Colors.white70, fontSize: 13)),
+              ],
+            ),
+          ),
+          IconButton(
+            onPressed: themeProvider.toggleTheme,
+            icon: Icon(themeProvider.isDarkMode ? Icons.light_mode_rounded : Icons.dark_mode_rounded, color: Colors.white),
+          ),
         ],
       ),
     );
   }
 
-  // ==================== کارت‌های آماری ====================
   Widget _buildStats(AppProvider provider) {
-    final stats = provider.getAttendanceStats();
-    final present = stats['present'] ?? 0;
-    final absent = stats['absent'] ?? 0;
-    final total = stats['total'] ?? 0;
-
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
       child: Column(
         children: [
           Row(
             children: [
-              Expanded(
-                child: StatCard(
-                  label: 'کلاس‌ها',
-                  value: provider.totalClassrooms.toString(),
-                  icon: Icons.meeting_room_rounded,
-                  color: AppConstants.primaryColor,
-                ),
-              ),
+              Expanded(child: StatCard(label: 'کلاس‌ها', value: provider.totalClassrooms.toString(), icon: Icons.meeting_room_rounded, color: AppConstants.primaryColor)),
               const SizedBox(width: 12),
-              Expanded(
-                child: StatCard(
-                  label: 'دروس',
-                  value: total.toString(),
-                  icon: Icons.book_rounded,
-                  color: AppConstants.accentColor,
-                ),
-              ),
+              Expanded(child: StatCard(label: 'دروس', value: provider.totalCourses.toString(), icon: Icons.book_rounded, color: AppConstants.accentColor)),
             ],
           ),
           const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(
-                child: StatCard(
-                  label: 'حاضر',
-                  value: present.toString(),
-                  icon: Icons.check_circle_rounded,
-                  color: AppConstants.successColor,
-                ),
-              ),
+              Expanded(child: StatCard(label: 'حاضر', value: provider.presentCount.toString(), icon: Icons.check_circle_rounded, color: AppConstants.successColor)),
               const SizedBox(width: 12),
-              Expanded(
-                child: StatCard(
-                  label: 'غایب',
-                  value: absent.toString(),
-                  icon: Icons.cancel_rounded,
-                  color: AppConstants.dangerColor,
-                ),
-              ),
+              Expanded(child: StatCard(label: 'غایب', value: provider.absentCount.toString(), icon: Icons.cancel_rounded, color: AppConstants.dangerColor)),
             ],
           ),
         ],
       ),
-    ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1, end: 0);
+    );
   }
 
-  // ==================== کارت منو ====================
-  Widget _menuCard(
-    BuildContext context, {
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    required Gradient gradient,
-    required VoidCallback onTap,
-  }) {
+  Widget _menuCard(BuildContext context, {required String title, required String subtitle, required IconData icon, required Gradient gradient, required VoidCallback onTap}) {
     return GradientCard(
       gradient: gradient,
       onTap: onTap,
@@ -339,22 +243,9 @@ class HomeScreen extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              Text(title, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
               const SizedBox(height: 4),
-              Text(
-                subtitle,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 11,
-                ),
-              ),
+              Text(subtitle, style: const TextStyle(color: Colors.white70, fontSize: 11)),
             ],
           ),
         ],
@@ -362,85 +253,90 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // ==================== انتخاب فایل ====================
-Future<void> _pickFiles(BuildContext context) async {
-  final provider = context.read<AppProvider>();
+  // تابع نمایش پیام (که در کدهای قبلی جا افتاده بود)
+  void _showSnack(BuildContext context, String msg, Color color) {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: color,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.all(16),
+      ),
+    );
+  }
 
-  // درخواست دسترسی به حافظه (حل مشکل خوانده نشدن)
-  var status = await Permission.manageExternalStorage.status;
-  if (!status.isGranted) {
-    status = await Permission.manageExternalStorage.request();
+  Future<void> _pickFiles(BuildContext context) async {
+    final provider = context.read<AppProvider>();
+
+    // گرفتن مجوز دسترسی
+    var status = await Permission.manageExternalStorage.status;
     if (!status.isGranted) {
-      var storageStatus = await Permission.storage.status;
-      if (!storageStatus.isGranted) {
-        storageStatus = await Permission.storage.request();
+      status = await Permission.manageExternalStorage.request();
+      if (!status.isGranted) {
+        var storageStatus = await Permission.storage.status;
+        if (!storageStatus.isGranted) {
+          storageStatus = await Permission.storage.request();
+        }
+        if (!storageStatus.isGranted) {
+          if (context.mounted) {
+            _showSnack(context, 'برای خواندن فایل‌ها، دسترسی به حافظه لازم است.', AppConstants.dangerColor);
+            await openAppSettings();
+          }
+          return;
+        }
       }
-      if (!storageStatus.isGranted) {
+    }
+
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['xlsx', 'xls'],
+        allowMultiple: true,
+      );
+
+      if (result == null || result.files.isEmpty) return;
+
+      File? classFile;
+      File? scheduleFile;
+
+      for (final f in result.files) {
+        if (f.path == null) continue;
+        final name = f.name.toLowerCase();
+        
+        // ۱. فایل کلاس‌ها
+        if (name.contains('class')) {
+          classFile = File(f.path!);
+        } 
+        // ۲. فایل برنامه دروس (با نام جدید all-class)
+        else if (name.contains('all-class') || name.contains('1405') || name.contains('all')) {
+          scheduleFile = File(f.path!);
+        } else {
+          if (classFile == null) {
+            classFile = File(f.path!);
+          } else {
+            scheduleFile = File(f.path!);
+          }
+        }
+      }
+
+      if (classFile == null || scheduleFile == null) {
         if (context.mounted) {
-          _showSnack(context, 'برای خواندن فایل‌ها، دسترسی به حافظه لازم است.', AppConstants.dangerColor);
-          await openAppSettings();
+          _showSnack(context, 'لطفاً فایل اول را با نام class و فایل دوم را با نام all-class انتخاب کنید.', AppConstants.dangerColor);
         }
         return;
       }
-    }
-  }
 
-  try {
-    // باز کردن پنجره انتخاب فایل
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['xlsx', 'xls'],
-      allowMultiple: true,
-    );
+      await provider.importFiles(classFile: classFile, scheduleFile: scheduleFile);
 
-    if (result == null || result.files.isEmpty) return;
-
-    File? classFile;
-    File? scheduleFile;
-
-    for (final f in result.files) {
-      if (f.path == null) continue;
-      final name = f.name.toLowerCase();
-      
-      // ۱. تشخیص فایل برنامه کلاس‌ها
-      if (name.contains('class')) {
-        classFile = File(f.path!);
-      } 
-      // ۲. تشخیص فایل دروس اساتید (all-class یا 1405)
-      else if (name.contains('all-class') || name.contains('1405') || name.contains('all')) {
-        scheduleFile = File(f.path!);
-      } else {
-        if (classFile == null) {
-          classFile = File(f.path!);
-        } else {
-          scheduleFile = File(f.path!);
-        }
-      }
-    }
-
-    // پیام خطای واضح اگر کاربر فایل اشتباهی انتخاب کرد
-    if (classFile == null || scheduleFile == null) {
       if (context.mounted) {
-        _showSnack(
-          context,
-          'لطفاً فایل اول را با نام class و فایل دوم را با نام all-class انتخاب کنید.',
-          AppConstants.dangerColor,
-        );
+        _showSnack(context, provider.statusMessage, AppConstants.successColor);
       }
-      return;
-    }
-
-    await provider.importFiles(
-      classFile: classFile,
-      scheduleFile: scheduleFile,
-    );
-
-    if (context.mounted) {
-      _showSnack(context, provider.statusMessage, AppConstants.successColor);
-    }
-  } catch (e) {
-    if (context.mounted) {
-      _showSnack(context, 'خطا: $e', AppConstants.dangerColor);
+    } catch (e) {
+      if (context.mounted) {
+        _showSnack(context, 'خطا: $e', AppConstants.dangerColor);
+      }
     }
   }
 }
