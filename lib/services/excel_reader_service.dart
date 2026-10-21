@@ -64,46 +64,51 @@ class ExcelReaderService {
     final sheet = excel.tables.values.first;
 
     for (int rowIndex = 0; rowIndex < sheet.maxRows; rowIndex++) {
-      final row = sheet.row(rowIndex);
-      if (row.length <= colField) continue;
+      try {
+        final row = sheet.row(rowIndex);
+        if (row.length <= colField) continue;
 
-      final courseName = _cellValue(row[colCourseName]) ?? '';
-      final scheduleText = _cellValue(row[colSchedule]) ?? '';
+        final courseName = _cellValue(row[colCourseName]) ?? '';
+        final scheduleText = _cellValue(row[colSchedule]) ?? '';
 
-      if (courseName.isEmpty || scheduleText.isEmpty) continue;
-      if (courseName == 'نام درس' || courseName == 'درس') continue;
+        if (courseName.isEmpty || scheduleText.isEmpty) continue;
+        if (courseName == 'نام درس' || courseName == 'درس') continue;
 
-      final teacherName = _cellValue(row[colTeacherName]) ?? '';
-      final teacherFamily = _cellValue(row[colTeacherFamily]) ?? '';
-      final teacher = '$teacherName $teacherFamily'.trim();
+        final teacherName = _cellValue(row[colTeacherName]) ?? '';
+        final teacherFamily = _cellValue(row[colTeacherFamily]) ?? '';
+        final teacher = '$teacherName $teacherFamily'.trim();
 
-      final studentCount = _cellValue(row[colStudentCount]) ?? '';
-      final group = _cellValue(row[colGroup]) ?? '';
-      final courseCode = _cellValue(row[colCourseCode]) ?? '';
-      final semester = _cellValue(row[colSemester]) ?? '';
-      final field = _cellValue(row[colField]) ?? '';
+        final studentCount = _cellValue(row[colStudentCount]) ?? '';
+        final group = _cellValue(row[colGroup]) ?? '';
+        final courseCode = _cellValue(row[colCourseCode]) ?? '';
+        final semester = _cellValue(row[colSemester]) ?? '';
+        final field = _cellValue(row[colField]) ?? '';
 
-      final sessions = _extractSessions(scheduleText);
+        final sessions = _extractSessions(scheduleText);
 
-      for (final s in sessions) {
-        if (!AppConstants.days.contains(s['day'])) continue;
-        if (!AppConstants.timeSlots.contains(s['time'])) continue;
-        if (s['classroom'] == null) continue;
+        for (final s in sessions) {
+          if (!AppConstants.days.contains(s['day'])) continue;
+          if (!AppConstants.timeSlots.contains(s['time'])) continue;
+          if (s['classroom'] == null) continue;
 
-        records.add(CourseRecord(
-          day: s['day']!,
-          timeSlot: s['time']!,
-          classroom: s['classroom']!,
-          weekType: s['weekType'] ?? AppConstants.weekNormal,
-          courseName: courseName,
-          teacher: teacher,
-          studentCount: studentCount,
-          group: group,
-          courseCode: courseCode,
-          field: field,
-          semester: semester,
-          sourceRow: rowIndex + 1,
-        ));
+          records.add(CourseRecord(
+            day: s['day']!,
+            timeSlot: s['time']!,
+            classroom: s['classroom']!,
+            weekType: s['weekType'] ?? AppConstants.weekNormal,
+            courseName: courseName,
+            teacher: teacher,
+            studentCount: studentCount,
+            group: group,
+            courseCode: courseCode,
+            field: field,
+            semester: semester,
+            sourceRow: rowIndex + 1,
+          ));
+        }
+      } catch (e) {
+        // اگر یک ردیف خراب بود، از آن رد شو و کل برنامه را متوقف نکن
+        continue;
       }
     }
     return records;
@@ -187,13 +192,16 @@ class ExcelReaderService {
     return prefixes.any(normalized.startsWith);
   }
 
-  // 🚨 این بخش کاملاً امن شده است تا هیچ‌وقت Null ندهد
+  // 🚨 این بخش کاملاً ضدضربه است تا هیچ‌وقت در خواندن سلول‌ها خطا ندهد
   String? _cellValue(Data? cell) {
     if (cell == null) return null;
     final v = cell.value;
     if (v == null) return null;
     try {
-      return v.toString().trim();
+      if (v is TextCellValue) return v.value.text;
+      if (v is IntCellValue) return v.value.toString();
+      if (v is DoubleCellValue) return v.value.toString();
+      return v.toString();
     } catch (e) {
       return null;
     }
