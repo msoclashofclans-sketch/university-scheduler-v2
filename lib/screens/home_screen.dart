@@ -56,10 +56,7 @@ class HomeScreen extends StatelessWidget {
                               subtitle: 'نمای هفتگی',
                               icon: Icons.calendar_month_rounded,
                               gradient: AppConstants.primaryGradient,
-                              onTap: () => Navigator.push(
-                                context,
-                                PageTransitions.slideFromRight(const ScheduleScreen()),
-                              ),
+                              onTap: () => Navigator.push(context, PageTransitions.slideFromRight(const ScheduleScreen())),
                             ),
                             _menuCard(
                               context,
@@ -67,10 +64,7 @@ class HomeScreen extends StatelessWidget {
                               subtitle: '${provider.totalClassrooms} کلاس',
                               icon: Icons.meeting_room_rounded,
                               gradient: AppConstants.successGradient,
-                              onTap: () => Navigator.push(
-                                context,
-                                PageTransitions.slideFromRight(const ClassScreen()),
-                              ),
+                              onTap: () => Navigator.push(context, PageTransitions.slideFromRight(const ClassScreen())),
                             ),
                             _menuCard(
                               context,
@@ -78,10 +72,7 @@ class HomeScreen extends StatelessWidget {
                               subtitle: '${provider.totalTeachers} استاد',
                               icon: Icons.person_rounded,
                               gradient: AppConstants.dangerGradient,
-                              onTap: () => Navigator.push(
-                                context,
-                                PageTransitions.slideFromRight(const TeacherScreen()),
-                              ),
+                              onTap: () => Navigator.push(context, PageTransitions.slideFromRight(const TeacherScreen())),
                             ),
                             _menuCard(
                               context,
@@ -89,10 +80,7 @@ class HomeScreen extends StatelessWidget {
                               subtitle: '${provider.presentCount} حاضر',
                               icon: Icons.fact_check_rounded,
                               gradient: AppConstants.oceanGradient,
-                              onTap: () => Navigator.push(
-                                context,
-                                PageTransitions.slideFromRight(const AttendanceScreen()),
-                              ),
+                              onTap: () => Navigator.push(context, PageTransitions.slideFromRight(const AttendanceScreen())),
                             ),
                             _menuCard(
                               context,
@@ -100,10 +88,7 @@ class HomeScreen extends StatelessWidget {
                               subtitle: 'خروجی Excel',
                               icon: Icons.analytics_rounded,
                               gradient: AppConstants.sunsetGradient,
-                              onTap: () => Navigator.push(
-                                context,
-                                PageTransitions.slideFromRight(const ReportsScreen()),
-                              ),
+                              onTap: () => Navigator.push(context, PageTransitions.slideFromRight(const ReportsScreen())),
                             ),
                             _menuCard(
                               context,
@@ -111,10 +96,7 @@ class HomeScreen extends StatelessWidget {
                               subtitle: 'تعداد دروس',
                               icon: Icons.bar_chart_rounded,
                               gradient: const LinearGradient(colors: [Colors.teal, Colors.green]),
-                              onTap: () => Navigator.push(
-                                context,
-                                PageTransitions.slideFromRight(const TeacherStatsScreen()),
-                              ),
+                              onTap: () => Navigator.push(context, PageTransitions.slideFromRight(const TeacherStatsScreen())),
                             ),
                             _menuCard(
                               context,
@@ -122,10 +104,7 @@ class HomeScreen extends StatelessWidget {
                               subtitle: 'مدیریت و تم',
                               icon: Icons.settings_rounded,
                               gradient: AppConstants.purpleGradient,
-                              onTap: () => Navigator.push(
-                                context,
-                                PageTransitions.slideFromRight(const SettingsScreen()),
-                              ),
+                              onTap: () => Navigator.push(context, PageTransitions.slideFromRight(const SettingsScreen())),
                             ),
                           ]),
                         ),
@@ -136,11 +115,7 @@ class HomeScreen extends StatelessWidget {
                           child: Center(
                             child: Text(
                               'طراحی و توسعه: مسعود خسروی',
-                              style: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: TextStyle(color: Colors.grey, fontSize: 13, fontWeight: FontWeight.bold),
                             ),
                           ),
                         ),
@@ -180,10 +155,7 @@ class HomeScreen extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(16),
-            ),
+            decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(16)),
             child: const Icon(Icons.school_rounded, color: Colors.white, size: 28),
           ),
           const SizedBox(width: 12),
@@ -255,28 +227,19 @@ class HomeScreen extends StatelessWidget {
   void _showSnack(BuildContext context, String msg, Color color) {
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(msg),
-        backgroundColor: color,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.all(16),
-      ),
+      SnackBar(content: Text(msg), backgroundColor: color, behavior: SnackBarBehavior.floating, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), margin: const EdgeInsets.all(16)),
     );
   }
 
   Future<void> _pickFiles(BuildContext context) async {
     final provider = context.read<AppProvider>();
 
-    // درخواست دسترسی به حافظه
     var status = await Permission.manageExternalStorage.status;
     if (!status.isGranted) {
       status = await Permission.manageExternalStorage.request();
       if (!status.isGranted) {
         var storageStatus = await Permission.storage.status;
-        if (!storageStatus.isGranted) {
-          storageStatus = await Permission.storage.request();
-        }
+        if (!storageStatus.isGranted) storageStatus = await Permission.storage.request();
         if (!storageStatus.isGranted) {
           if (context.mounted) {
             _showSnack(context, 'برای خواندن فایل‌ها، دسترسی به حافظه لازم است.', AppConstants.dangerColor);
@@ -288,12 +251,7 @@ class HomeScreen extends StatelessWidget {
     }
 
     try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['xlsx', 'xls'],
-        allowMultiple: true,
-      );
-
+      final result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['xlsx', 'xls'], allowMultiple: true);
       if (result == null || result.files.isEmpty) return;
 
       File? classFile;
@@ -301,43 +259,27 @@ class HomeScreen extends StatelessWidget {
 
       for (final f in result.files) {
         if (f.path == null) continue;
-        
         final name = f.name.toLowerCase();
 
-        // ۱. فایل برنامه دروس (با نام جدید allprog)
         if (name.contains('allprog')) {
           scheduleFile = File(f.path!);
-        } 
-        // ۲. فایل کلاس‌ها (با نام class)
-        else if (name.contains('class')) {
+        } else if (name.contains('class')) {
           classFile = File(f.path!);
-        }
-        // پشتیبان (اگر کاربر اسم فایل را تغییر داده بود)
-        else {
-          if (classFile == null) {
-            classFile = File(f.path!);
-          } else if (scheduleFile == null) {
-            scheduleFile = File(f.path!);
-          }
+        } else {
+          if (classFile == null) classFile = File(f.path!);
+          else if (scheduleFile == null) scheduleFile = File(f.path!);
         }
       }
 
       if (classFile == null || scheduleFile == null) {
-        if (context.mounted) {
-          _showSnack(context, 'لطفاً فایل اول را با نام class و فایل دوم را با نام allprog انتخاب کنید.', AppConstants.dangerColor);
-        }
+        if (context.mounted) _showSnack(context, 'لطفاً فایل اول را با نام class و فایل دوم را با نام allprog انتخاب کنید.', AppConstants.dangerColor);
         return;
       }
 
       await provider.importFiles(classFile: classFile, scheduleFile: scheduleFile);
-
-      if (context.mounted) {
-        _showSnack(context, provider.statusMessage, AppConstants.successColor);
-      }
+      if (context.mounted) _showSnack(context, provider.statusMessage, AppConstants.successColor);
     } catch (e) {
-      if (context.mounted) {
-        _showSnack(context, 'خطا: $e', AppConstants.dangerColor);
-      }
+      if (context.mounted) _showSnack(context, 'خطا: $e', AppConstants.dangerColor);
     }
   }
 }
