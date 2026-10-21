@@ -224,6 +224,23 @@ class HomeScreen extends StatelessWidget {
               ),
             ],
           ),
+         SliverToBoxAdapter(
+  child: Padding(
+    padding: const EdgeInsets.only(top: 30, bottom: 20),
+    child: Center(
+      child: Text(
+        'طراحی و توسعه: مسعود خسروی',
+        style: TextStyle(
+          color: Theme.of(context).brightness == Brightness.dark 
+              ? Colors.white54 
+              : Colors.grey.shade600,
+          fontSize: 13,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    ),
+  ),
+), 
         ],
       ),
     );
