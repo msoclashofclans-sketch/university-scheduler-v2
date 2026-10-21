@@ -1,3 +1,4 @@
+import 'teacher_stats_screen.dart
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -45,6 +46,19 @@ class HomeScreen extends StatelessWidget {
                             mainAxisSpacing: 12,
                             crossAxisSpacing: 12,
                             childAspectRatio: 1.15,
+                          ),
+                          _menuCard(
+                            context,
+                            title: 'آمار اساتید',
+                            subtitle: 'تعداد دروس و واحد',
+                            icon: Icons.analytics_rounded,
+                            gradient: AppConstants.oceanGradient,
+                            onTap: () => Navigator.push(
+                              context,
+                              PageTransitions.slideFromRight(
+                                const TeacherStatsScreen(),
+                              ),
+                            ),
                           ),
                           delegate: SliverChildListDelegate([
                             _menuCard(
