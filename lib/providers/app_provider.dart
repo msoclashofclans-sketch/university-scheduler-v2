@@ -119,6 +119,19 @@ class AppProvider extends ChangeNotifier {
     return set;
   }
 
+  // 🚨 این متد همان چیزی است که خطا می‌داد و الان اضافه شد
+  double getTeacherAttendanceRate(String teacher) {
+    final records = getByTeacher(teacher);
+    if (records.isEmpty) return 0.0;
+
+    int present = 0;
+    for (final r in records) {
+      final att = _attendanceMap[r.uniqueKey];
+      if (att?.status == AppConstants.statusPresent) present++;
+    }
+    return present / records.length;
+  }
+
   Map<String, int> getAttendanceStats() {
     int present = 0;
     int absent = 0;
