@@ -332,82 +332,84 @@ class HomeScreen extends StatelessWidget {
   }
 
   // ==================== انتخاب فایل ====================
-  Future<void> _pickFiles(BuildContext context) async {
-    final provider = context.read<AppProvider>();
+Future<void> _pickFiles(BuildContext context) async {
+  final provider = context.read<AppProvider>();
 
-    try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['xlsx', 'xls'],
-        allowMultiple: true,
-      );
-
-      if (result == null || result.files.isEmpty) return;
-
-      File? classFile;
-      File? scheduleFile;
-
-      for (final f in result.files) {
-        if (f.path == null) continue;
-        final name = f.name.toLowerCase();
-        if (name.contains('class')) {
-          classFile = File(f.path!);
-        } else if (name.contains('1405') || name.contains('all')) {
-          scheduleFile = File(f.path!);
-        } else {
-          if (classFile == null) {
-            classFile = File(f.path!);
-          } else {
-            scheduleFile = File(f.path!);
-          }
-        }
+  // درخواست دسترسی به حافظه (حل مشکل خوانده نشدن)
+  var status = await Permission.manageExternalStorage.status;
+  if (!status.isGranted) {
+    status = await Permission.manageExternalStorage.request();
+    if (!status.isGranted) {
+      var storageStatus = await Permission.storage.status;
+      if (!storageStatus.isGranted) {
+        storageStatus = await Permission.storage.request();
       }
-
-      if (classFile == null || scheduleFile == null) {
+      if (!storageStatus.isGranted) {
         if (context.mounted) {
-          _showSnack(
-            context,
-            'لطفاً دو فایل انتخاب کنید: class.xlsx و 14051.xlsx',
-            AppConstants.dangerColor,
-          );
+          _showSnack(context, 'برای خواندن فایل‌ها، دسترسی به حافظه لازم است.', AppConstants.dangerColor);
+          await openAppSettings();
         }
         return;
-      }
-
-      await provider.importFiles(
-        classFile: classFile,
-        scheduleFile: scheduleFile,
-      );
-
-      if (context.mounted) {
-        _showSnack(
-          context,
-          provider.statusMessage,
-          AppConstants.successColor,
-        );
-      }
-    } catch (e) {
-      if (context.mounted) {
-        _showSnack(
-          context,
-          'خطا: $e',
-          AppConstants.dangerColor,
-        );
       }
     }
   }
 
-  void _showSnack(BuildContext context, String msg, Color color) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(msg),
-        backgroundColor: color,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        margin: const EdgeInsets.all(16),
-      ),
+  try {
+    // باز کردن پنجره انتخاب فایل
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['xlsx', 'xls'],
+      allowMultiple: true,
     );
+
+    if (result == null || result.files.isEmpty) return;
+
+    File? classFile;
+    File? scheduleFile;
+
+    for (final f in result.files) {
+      if (f.path == null) continue;
+      final name = f.name.toLowerCase();
+      
+      // ۱. تشخیص فایل برنامه کلاس‌ها
+      if (name.contains('class')) {
+        classFile = File(f.path!);
+      } 
+      // ۲. تشخیص فایل دروس اساتید (all-class یا 1405)
+      else if (name.contains('all-class') || name.contains('1405') || name.contains('all')) {
+        scheduleFile = File(f.path!);
+      } else {
+        if (classFile == null) {
+          classFile = File(f.path!);
+        } else {
+          scheduleFile = File(f.path!);
+        }
+      }
+    }
+
+    // پیام خطای واضح اگر کاربر فایل اشتباهی انتخاب کرد
+    if (classFile == null || scheduleFile == null) {
+      if (context.mounted) {
+        _showSnack(
+          context,
+          'لطفاً فایل اول را با نام class و فایل دوم را با نام all-class انتخاب کنید.',
+          AppConstants.dangerColor,
+        );
+      }
+      return;
+    }
+
+    await provider.importFiles(
+      classFile: classFile,
+      scheduleFile: scheduleFile,
+    );
+
+    if (context.mounted) {
+      _showSnack(context, provider.statusMessage, AppConstants.successColor);
+    }
+  } catch (e) {
+    if (context.mounted) {
+      _showSnack(context, 'خطا: $e', AppConstants.dangerColor);
+    }
   }
 }
