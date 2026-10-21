@@ -49,10 +49,7 @@ class AppProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> importFiles({
-    required File classFile,
-    required File scheduleFile,
-  }) async {
+  Future<void> importFiles({required File classFile, required File scheduleFile}) async {
     _setLoading(true, 'در حال خواندن فایل کلاس‌ها...');
     _setProgress(0.1);
 
@@ -119,7 +116,7 @@ class AppProvider extends ChangeNotifier {
     return set;
   }
 
-  // 🚨 این متد همان چیزی است که خطا می‌داد و الان اضافه شد
+  // 🚨 این همان متدی است که باعث خطا شده بود
   double getTeacherAttendanceRate(String teacher) {
     final records = getByTeacher(teacher);
     if (records.isEmpty) return 0.0;
