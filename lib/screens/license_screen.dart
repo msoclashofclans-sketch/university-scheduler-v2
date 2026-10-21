@@ -1,3 +1,4 @@
+import 'splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/constants.dart';
@@ -26,8 +27,12 @@ class _LicenseScreenState extends State<LicenseScreen> {
       await prefs.setString('license_expire_date', expireDate.toIso8601String());
       
       if (mounted) {
-        Navigator.pop(context, true);
-      }
+  // هدایت مستقیم به صفحه اصلی پس از تایید لایسنس
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(builder: (context) => const SplashScreen()),
+  );
+}
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
