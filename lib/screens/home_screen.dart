@@ -1,10 +1,9 @@
-import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:permission_handler/permission_handler.dart'; // اضافه شده برای رفع خطای Permission
+import 'package:permission_handler/permission_handler.dart';
 import '../providers/app_provider.dart';
 import '../providers/theme_provider.dart';
 import '../utils/constants.dart';
@@ -18,7 +17,7 @@ import 'teacher_screen.dart';
 import 'attendance_screen.dart';
 import 'reports_screen.dart';
 import 'settings_screen.dart';
-import 'teacher_stats_screen.dart'; // اضافه شده برای صفحه آمار
+import 'teacher_stats_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -108,7 +107,7 @@ class HomeScreen extends StatelessWidget {
                             ),
                             _menuCard(
                               context,
-                              title: 'آمار اساتید', // دکمه جدید
+                              title: 'آمار اساتید',
                               subtitle: 'تعداد دروس',
                               icon: Icons.bar_chart_rounded,
                               gradient: const LinearGradient(colors: [Colors.teal, Colors.green]),
@@ -131,7 +130,6 @@ class HomeScreen extends StatelessWidget {
                           ]),
                         ),
                       ),
-                      // نام سازنده در پایین صفحه
                       const SliverToBoxAdapter(
                         child: Padding(
                           padding: EdgeInsets.only(top: 10, bottom: 30),
@@ -254,7 +252,6 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // تابع نمایش پیام (که در کدهای قبلی جا افتاده بود)
   void _showSnack(BuildContext context, String msg, Color color) {
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -269,79 +266,71 @@ class HomeScreen extends StatelessWidget {
   }
 
   Future<void> _pickFiles(BuildContext context) async {
-  final provider = context.read<AppProvider>();
+    final provider = context.read<AppProvider>();
 
-  // ۱. گرفتن مجوز دسترسی به فایل‌ها (برای اندروید ۱۳ و ۱۴)
-  var status = await Permission.manageExternalStorage.status;
-  if (!status.isGranted) {
-    status = await Permission.manageExternalStorage.request();
-    
-    // اگر باز هم اجازه نداد، مجوز قدیمی‌تر (storage) را چک می‌کنیم
+    var status = await Permission.manageExternalStorage.status;
     if (!status.isGranted) {
-      var storageStatus = await Permission.storage.status;
-      if (!storageStatus.isGranted) {
-        storageStatus = await Permission.storage.request();
+      status = await Permission.manageExternalStorage.request();
+      if (!status.isGranted) {
+        var storageStatus = await Permission.storage.status;
+        if (!storageStatus.isGranted) {
+          storageStatus = await Permission.storage.request();
+        }
+        if (!storageStatus.isGranted) {
+          if (context.mounted) {
+            _showSnack(context, 'برای خواندن فایل‌ها، دسترسی به حافظه لازم است.', AppConstants.dangerColor);
+            await openAppSettings();
+          }
+          return;
+        }
       }
-      
-      // اگر هیچ‌کدام اجازه ندادند، پیام می‌دهیم و به تنظیمات می‌فرستیم
-      if (!storageStatus.isGranted) {
+    }
+
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['xlsx', 'xls'],
+        allowMultiple: true,
+      );
+
+      if (result == null || result.files.isEmpty) return;
+
+      File? classFile;
+      File? scheduleFile;
+
+      for (final f in result.files) {
+        if (f.path == null) continue;
+        final name = f.name.toLowerCase();
+        
+        if (name.contains('class')) {
+          classFile = File(f.path!);
+        } else if (name.contains('all-class') || name.contains('1405') || name.contains('all')) {
+          scheduleFile = File(f.path!);
+        } else {
+          if (classFile == null) {
+            classFile = File(f.path!);
+          } else {
+            scheduleFile = File(f.path!);
+          }
+        }
+      }
+
+      if (classFile == null || scheduleFile == null) {
         if (context.mounted) {
-          _showSnack(context, 'برای خواندن فایل‌ها، باید به برنامه اجازه دسترسی به حافظه بدهید.', AppConstants.dangerColor);
-          await openAppSettings(); // باز کردن تنظیمات گوشی
+          _showSnack(context, 'لطفاً فایل اول را با نام class و فایل دوم را با نام all-class انتخاب کنید.', AppConstants.dangerColor);
         }
         return;
       }
-    }
-  }
 
-  // ۲. باز کردن پنجره انتخاب فایل
-  try {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['xlsx', 'xls'],
-      allowMultiple: true,
-    );
+      await provider.importFiles(classFile: classFile, scheduleFile: scheduleFile);
 
-    if (result == null || result.files.isEmpty) return;
-
-    File? classFile;
-    File? scheduleFile;
-
-    for (final f in result.files) {
-      if (f.path == null) continue;
-      final name = f.name.toLowerCase();
-      
-      // فایل کلاس‌ها
-      if (name.contains('class')) {
-        classFile = File(f.path!);
-      } 
-      // فایل برنامه (all-class)
-      else if (name.contains('all-class') || name.contains('1405') || name.contains('all')) {
-        scheduleFile = File(f.path!);
-      } else {
-        if (classFile == null) {
-          classFile = File(f.path!);
-        } else {
-          scheduleFile = File(f.path!);
-        }
-      }
-    }
-
-    if (classFile == null || scheduleFile == null) {
       if (context.mounted) {
-        _showSnack(context, 'لطفاً فایل اول را با نام class و فایل دوم را با نام all-class انتخاب کنید.', AppConstants.dangerColor);
+        _showSnack(context, provider.statusMessage, AppConstants.successColor);
       }
-      return;
-    }
-
-    await provider.importFiles(classFile: classFile, scheduleFile: scheduleFile);
-
-    if (context.mounted) {
-      _showSnack(context, provider.statusMessage, AppConstants.successColor);
-    }
-  } catch (e) {
-    if (context.mounted) {
-      _showSnack(context, 'خطا: $e', AppConstants.dangerColor);
+    } catch (e) {
+      if (context.mounted) {
+        _showSnack(context, 'خطا: $e', AppConstants.dangerColor);
+      }
     }
   }
 }
