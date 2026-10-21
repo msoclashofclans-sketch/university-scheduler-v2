@@ -33,9 +33,10 @@ jobs:
           # گرفتن پکیج‌ها
           flutter pub get
           
-          # 🚨 پیدا کردن و کامنت کردن هر خطی که به ndkVersion اشاره دارد
-          echo "Removing NDK references..."
-          find android -name "build.gradle*" -exec sed -i 's/^[ \t]*ndkVersion.*/\/\/ ndkVersion removed for GitHub Actions/' {} +
+          # 🚨 پیدا کردن و پاک کردن هر خطی که به NDK اشاره دارد
+          echo "Removing NDK references from all gradle files..."
+          find android -name "build.gradle*" -exec sed -i '/ndkVersion/d' {} +
+          find android -name "build.gradle*" -exec sed -i '/ndkPath/d' {} +
           
           # ساخت APK با نادیده گرفتن خطاهای نسخه
           flutter build apk --release --android-skip-build-dependency-validation
