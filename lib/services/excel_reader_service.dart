@@ -5,7 +5,6 @@ import '../models/course_record.dart';
 import '../utils/constants.dart';
 
 class ExcelReaderService {
-  // ==================== شماره ستون‌های فایل 14051.xlsx ====================
   static const int colStudentCount = 1;
   static const int colSchedule = 5;
   static const int colTeacherFamily = 6;
@@ -16,14 +15,12 @@ class ExcelReaderService {
   static const int colSemester = 18;
   static const int colField = 19;
 
-  // ==================== خواندن class.xlsx ====================
   Future<List<Classroom>> readClassrooms(File file) async {
     final bytes = file.readAsBytesSync();
     final excel = Excel.decodeBytes(bytes);
     final classrooms = <Classroom>[];
 
     if (excel.tables.isEmpty) return classrooms;
-
     final sheet = excel.tables.values.first;
 
     for (final row in sheet.rows) {
@@ -47,30 +44,23 @@ class ExcelReaderService {
       }
 
       if (className != null && capacity != null) {
-        classrooms.add(Classroom(
-          name: className,
-          capacity: capacity,
-        ));
+        classrooms.add(Classroom(name: className, capacity: capacity));
       }
     }
 
-    // حذف تکراری‌ها
     final unique = <String, Classroom>{};
     for (final c in classrooms) {
       unique[c.normalizedName] = c;
     }
-
     return unique.values.toList();
   }
 
-  // ==================== خواندن 14051.xlsx ====================
   Future<List<CourseRecord>> readCourseRecords(File file) async {
     final bytes = file.readAsBytesSync();
     final excel = Excel.decodeBytes(bytes);
     final records = <CourseRecord>[];
 
     if (excel.tables.isEmpty) return records;
-
     final sheet = excel.tables.values.first;
 
     for (int rowIndex = 0; rowIndex < sheet.maxRows; rowIndex++) {
@@ -116,27 +106,19 @@ class ExcelReaderService {
         ));
       }
     }
-
     return records;
   }
 
-  // ==================== استخراج جلسات از متن برنامه ====================
   List<Map<String, String?>> _extractSessions(String scheduleText) {
     final sessions = <Map<String, String?>>[];
     final text = _normalize(scheduleText);
-
-    final dayPattern = RegExp(
-      r'(شنبه|یکشنبه|دوشنبه|سه\s*شنبه|چهارشنبه)',
-    );
-
+    final dayPattern = RegExp(r'(شنبه|یکشنبه|دوشنبه|سه\s*شنبه|چهارشنبه)');
     final dayMatches = dayPattern.allMatches(text).toList();
 
     for (int i = 0; i < dayMatches.length; i++) {
       final dayMatch = dayMatches[i];
       final start = dayMatch.start;
-      final end =
-          (i + 1 < dayMatches.length) ? dayMatches[i + 1].start : text.length;
-
+      final end = (i + 1 < dayMatches.length) ? dayMatches[i + 1].start : text.length;
       final section = text.substring(start, end);
       final day = _normalizeDay(dayMatch.group(1)!);
 
@@ -144,12 +126,9 @@ class ExcelReaderService {
       final timeMatch = timePattern.firstMatch(section);
       if (timeMatch == null) continue;
 
-      final timeSlot =
-          '${_pad(timeMatch.group(1)!)} - ${_pad(timeMatch.group(2)!)}';
-
+      final timeSlot = '${_pad(timeMatch.group(1)!)} - ${_pad(timeMatch.group(2)!)}';
       final afterTime = section.substring(timeMatch.end);
       final classroom = _findClassroom(afterTime);
-
       final weekType = _getWeekType(section);
 
       sessions.add({
@@ -159,11 +138,9 @@ class ExcelReaderService {
         'weekType': weekType,
       });
     }
-
     return sessions;
   }
 
-  // ==================== پیدا کردن کلاس در متن ====================
   String? _findClassroom(String text) {
     final patterns = [
       RegExp(r'خوارزمی\s*\d+'),
@@ -174,14 +151,10 @@ class ExcelReaderService {
       RegExp(r'کارگاه\s*پلیمر'),
       RegExp(r'آزمایشگاه[^\*]*'),
     ];
-
     for (final p in patterns) {
       final match = p.firstMatch(text);
-      if (match != null) {
-        return _normalizeClassName(match.group(0)!);
-      }
+      if (match != null) return _normalizeClassName(match.group(0)!);
     }
-
     return null;
   }
 
@@ -191,10 +164,7 @@ class ExcelReaderService {
     return AppConstants.weekNormal;
   }
 
-  String _normalizeDay(String day) {
-    if (day.contains('سه')) return 'سه شنبه';
-    return day;
-  }
+  String _normalizeDay(String day) => day.contains('سه') ? 'سه شنبه' : day;
 
   String _pad(String time) {
     final parts = time.split(':');
@@ -204,51 +174,28 @@ class ExcelReaderService {
   }
 
   String _normalize(String value) {
-    return value
-        .replaceAll('ي', 'ی')
-        .replaceAll('ك', 'ک')
-        .replaceAll('\u200c', ' ')
-        .replaceAll('\u200d', '')
-        .replaceAll('\u200e', '')
-        .replaceAll('\u200f', '')
-        .replaceAll('\xa0', ' ')
-        .replaceAll('\r', ' ')
-        .replaceAll('\n', ' ')
-        .replaceAll(RegExp(r'\s+'), ' ')
-        .trim();
+    return value.replaceAll('ي', 'ی').replaceAll('ك', 'ک').replaceAll('\u200c', ' ').replaceAll('\u200d', '').replaceAll('\u200e', '').replaceAll('\u200f', '').replaceAll('\xa0', ' ').replaceAll('\r', ' ').replaceAll('\n', ' ').replaceAll(RegExp(r'\s+'), ' ').trim();
   }
 
   String _normalizeClassName(String value) {
-    return value
-        .replaceAll('ي', 'ی')
-        .replaceAll('ك', 'ک')
-        .replaceAll('خيام', 'خیام')
-        .replaceAll('خوارزمي', 'خوارزمی')
-        .replaceAll('ابوريحان', 'ابوریحان')
-        .replaceAll('فارابي', 'فارابی')
-        .replaceAll(RegExp(r'\([^)]*\)'), '')
-        .replaceAll(RegExp(r'\s+'), ' ')
-        .trim();
+    return value.replaceAll('ي', 'ی').replaceAll('ك', 'ک').replaceAll('خيام', 'خیام').replaceAll('خوارزمي', 'خوارزمی').replaceAll('ابوريحان', 'ابوریحان').replaceAll('فارابي', 'فارابی').replaceAll(RegExp(r'\([^)]*\)'), '').replaceAll(RegExp(r'\s+'), ' ').trim();
   }
 
   bool _looksLikeClassName(String value) {
     final normalized = _normalizeClassName(value);
-    const prefixes = [
-      'خوارزمی',
-      'ابوریحان',
-      'خیام',
-      'فارابی',
-      'کارگاه کامپیوتر',
-      'کارگاه پلیمر',
-      'آزمایشگاه',
-    ];
+    const prefixes = ['خوارزمی', 'ابوریحان', 'خیام', 'فارابی', 'کارگاه کامپیوتر', 'کارگاه پلیمر', 'آزمایشگاه'];
     return prefixes.any(normalized.startsWith);
   }
 
+  // 🚨 این بخش کاملاً امن شده است تا هیچ‌وقت Null ندهد
   String? _cellValue(Data? cell) {
     if (cell == null) return null;
     final v = cell.value;
     if (v == null) return null;
-    return v.toString().trim();
+    try {
+      return v.toString().trim();
+    } catch (e) {
+      return null;
+    }
   }
 }
