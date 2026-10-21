@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'providers/app_provider.dart';
 import 'providers/theme_provider.dart';
 import 'screens/license_screen.dart';
-import 'screens/splash_screen.dart';
 import 'utils/theme.dart';
 
 void main() async {
@@ -20,17 +18,6 @@ void main() async {
 
 class UniversitySchedulerApp extends StatelessWidget {
   const UniversitySchedulerApp({super.key});
-
-  Future<bool> _checkLicense() async {
-    final prefs = await SharedPreferences.getInstance();
-    final expireDateStr = prefs.getString('license_expire_date');
-    
-    if (expireDateStr == null) {
-      return false; // اولین بار است، باید لایسنس وارد شود
-    }
-    final expireDate = DateTime.parse(expireDateStr);
-    return DateTime.now().isBefore(expireDate);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,18 +41,9 @@ class UniversitySchedulerApp extends StatelessWidget {
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,
             ],
-            home: FutureBuilder<bool>(
-              future: _checkLicense(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Scaffold(body: Center(child: CircularProgressIndicator()));
-                }
-                if (snapshot.hasData && snapshot.data == true) {
-                  return const SplashScreen(); // لایسنس معتبر است
-                }
-                return const LicenseScreen(); // لایسنس منقضی یا وجود ندارد
-              },
-            ),
+            // ما مستقیماً می‌رویم سراغ صفحه لایسنس. 
+            // این صفحه خودش تصمیم می‌گیرد که آیا لایسنس معتبر است یا باید قفل بماند.
+            home: const LicenseScreen(),
           );
         },
       ),
