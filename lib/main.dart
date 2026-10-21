@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 
 import 'providers/app_provider.dart';
 import 'providers/theme_provider.dart';
-import 'screens/license_screen.dart';
+import 'screens/splash_screen.dart'; // برگشت به صفحه شروع
 import 'utils/theme.dart';
 
 void main() async {
@@ -41,9 +41,8 @@ class UniversitySchedulerApp extends StatelessWidget {
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,
             ],
-            // ما مستقیماً می‌رویم سراغ صفحه لایسنس. 
-            // این صفحه خودش تصمیم می‌گیرد که آیا لایسنس معتبر است یا باید قفل بماند.
-            home: const LicenseScreen(),
+            // برنامه مستقیماً از Splash شروع می‌شود و لایسنس کلاً حذف شد
+            home: const SplashScreen(),
           );
         },
       ),
