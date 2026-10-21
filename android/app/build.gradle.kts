@@ -7,7 +7,6 @@ plugins {
 android {
     namespace = "com.university.university_scheduler"
     compileSdk = 36
-    ndkVersion = flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
