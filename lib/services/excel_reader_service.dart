@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:excel/excel.dart';
+import 'package:spreadsheet_decoder/spreadsheet_decoder.dart';
 import '../models/classroom.dart';
 import '../models/course_record.dart';
 import '../utils/constants.dart';
@@ -18,11 +18,11 @@ class ExcelReaderService {
 
   Future<List<Classroom>> readClassrooms(File file) async {
     final bytes = file.readAsBytesSync();
-    final excel = Excel.decodeBytes(bytes);
+    final spreadsheet = SpreadsheetDecoder.decodeBytes(bytes);
     final classrooms = <Classroom>[];
 
-    if (excel.tables.isEmpty) return classrooms;
-    final sheet = excel.tables.values.first;
+    if (spreadsheet.tables.isEmpty) return classrooms;
+    final sheet = spreadsheet.tables.values.first;
 
     for (final row in sheet.rows) {
       if (row.isEmpty) continue;
@@ -51,15 +51,15 @@ class ExcelReaderService {
 
   Future<List<CourseRecord>> readCourseRecords(File file) async {
     final bytes = file.readAsBytesSync();
-    final excel = Excel.decodeBytes(bytes);
+    final spreadsheet = SpreadsheetDecoder.decodeBytes(bytes);
     final records = <CourseRecord>[];
 
-    if (excel.tables.isEmpty) return records;
-    final sheet = excel.tables.values.first;
+    if (spreadsheet.tables.isEmpty) return records;
+    final sheet = spreadsheet.tables.values.first;
 
     for (int rowIndex = 0; rowIndex < sheet.maxRows; rowIndex++) {
       try {
-        final row = sheet.row(rowIndex);
+        final row = sheet.rows[rowIndex];
         if (row.length <= colField) continue;
 
         final courseName = _cellValue(row[colCourseName]) ?? '';
@@ -185,17 +185,9 @@ class ExcelReaderService {
     return prefixes.any(normalized.startsWith);
   }
 
-  String? _cellValue(Data? cell) {
+  // 🚨 این تابع حالا با کتابخانه جدید کاملاً امن است
+  String? _cellValue(dynamic cell) {
     if (cell == null) return null;
-    final v = cell.value;
-    if (v == null) return null;
-    try {
-      if (v is TextCellValue) return v.value.text;
-      if (v is IntCellValue) return v.value.toString();
-      if (v is DoubleCellValue) return v.value.toString();
-      return v.toString();
-    } catch (e) {
-      return null;
-    }
+    return cell.toString().trim();
   }
 }
