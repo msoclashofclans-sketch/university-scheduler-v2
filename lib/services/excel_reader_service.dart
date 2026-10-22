@@ -5,15 +5,17 @@ import '../models/course_record.dart';
 import '../utils/constants.dart';
 
 class ExcelReaderService {
-  static const int colStudentCount = 1;
-  static const int colSchedule = 5;
-  static const int colTeacherFamily = 6;
-  static const int colTeacherName = 7;
-  static const int colGroup = 15;
-  static const int colCourseName = 16;
-  static const int colCourseCode = 17;
-  static const int colSemester = 18;
-  static const int colField = 19;
+  // 🚨 تنظیم دقیق ستون‌ها بر اساس فایل پایتون (app_core.py)
+  // در Dart، شماره ستون‌ها از صفر شروع می‌شود، پس عدد پایتون منهای یک می‌شود
+  static const int colStudentCount = 1;      // B
+  static const int colSchedule = 5;          // F
+  static const int colTeacherFamily = 6;     // G
+  static const int colTeacherName = 7;       // H
+  static const int colGroup = 15;            // P
+  static const int colCourseName = 16;       // Q
+  static const int colCourseCode = 17;       // R
+  static const int colSemester = 18;         // S
+  static const int colField = 19;            // T
 
   Future<List<Classroom>> readClassrooms(File file) async {
     final bytes = file.readAsBytesSync();
@@ -107,7 +109,7 @@ class ExcelReaderService {
           ));
         }
       } catch (e) {
-        // اگر یک ردیف خراب بود، از آن رد شو و کل برنامه را متوقف نکن
+        // اگر ردیفی خراب بود، از آن رد شو
         continue;
       }
     }
@@ -192,7 +194,7 @@ class ExcelReaderService {
     return prefixes.any(normalized.startsWith);
   }
 
-  // 🚨 این بخش کاملاً ضدضربه است تا هیچ‌وقت در خواندن سلول‌ها خطا ندهد
+  // 🚨 استخراج امن مقدار سلول (متن یا عدد)
   String? _cellValue(Data? cell) {
     if (cell == null) return null;
     final v = cell.value;
