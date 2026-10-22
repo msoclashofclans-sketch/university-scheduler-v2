@@ -116,7 +116,6 @@ class AppProvider extends ChangeNotifier {
     return set;
   }
 
-  // 🚨 این همان متدی است که باعث خطا شده بود
   double getTeacherAttendanceRate(String teacher) {
     final records = getByTeacher(teacher);
     if (records.isEmpty) return 0.0;
