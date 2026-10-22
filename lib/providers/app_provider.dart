@@ -43,7 +43,7 @@ class AppProvider extends ChangeNotifier {
       _attendanceMap = {for (final a in attList) a.recordKey: a};
       _setStatus('آماده');
     } catch (e) {
-      _setStatus('خطا در بارگذاری: $e');
+      _setStatus('خطا در بارگذاری دیتابیس: $e');
     } finally {
       _setLoading(false, '');
     }
@@ -54,13 +54,20 @@ class AppProvider extends ChangeNotifier {
     _setProgress(0.1);
 
     try {
+      // 🚨 بررسی فایل کلاس‌ها
+      _setStatus('در حال پردازش فایل کلاس‌ها...');
       final classrooms = await _reader.readClassrooms(classFile);
-      _setStatus('${classrooms.length} کلاس خوانده شد');
+      if (classrooms.isEmpty) {
+        throw Exception('هیچ کلاسی در فایل class.xlsx پیدا نشد. آیا ساختار فایل درست است؟');
+      }
       _setProgress(0.3);
 
-      _setStatus('در حال خواندن برنامه درسی...');
+      // 🚨 بررسی فایل برنامه دروس
+      _setStatus('در حال پردازش فایل برنامه دروس...');
       final records = await _reader.readCourseRecords(scheduleFile);
-      _setStatus('${records.length} جلسه خوانده شد');
+      if (records.isEmpty) {
+        throw Exception('هیچ درسی در فایل allprog.xlsx پیدا نشد. آیا ستون‌های F تا T پر هستند؟');
+      }
       _setProgress(0.6);
 
       _setStatus('در حال ذخیره در دیتابیس...');
@@ -77,7 +84,10 @@ class AppProvider extends ChangeNotifier {
       _setStatus('✅ ${records.length} جلسه از ${classrooms.length} کلاس وارد شد');
       notifyListeners();
     } catch (e) {
+      // اینجا خطای دقیق را می‌گیریم
       _setStatus('❌ خطا: $e');
+      _setLoading(false, '');
+      rethrow; // خطا را به صفحه اصلی پرتاب می‌کنیم تا در SnackBar نشان داده شود
     } finally {
       _setLoading(false, _statusMessage);
     }
