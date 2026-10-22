@@ -36,9 +36,7 @@ class HomeScreen extends StatelessWidget {
                   child: CustomScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     slivers: [
-                      SliverToBoxAdapter(
-                        child: _buildHeader(context, provider, themeProvider),
-                      ),
+                      SliverToBoxAdapter(child: _buildHeader(context, provider, themeProvider)),
                       SliverToBoxAdapter(child: _buildStats(provider)),
                       SliverPadding(
                         padding: const EdgeInsets.all(16),
@@ -50,84 +48,26 @@ class HomeScreen extends StatelessWidget {
                             childAspectRatio: 1.15,
                           ),
                           delegate: SliverChildListDelegate([
-                            _menuCard(
-                              context,
-                              title: 'برنامه کلاس‌ها',
-                              subtitle: 'نمای هفتگی',
-                              icon: Icons.calendar_month_rounded,
-                              gradient: AppConstants.primaryGradient,
-                              onTap: () => Navigator.push(context, PageTransitions.slideFromRight(const ScheduleScreen())),
-                            ),
-                            _menuCard(
-                              context,
-                              title: 'کلاس‌ها',
-                              subtitle: '${provider.totalClassrooms} کلاس',
-                              icon: Icons.meeting_room_rounded,
-                              gradient: AppConstants.successGradient,
-                              onTap: () => Navigator.push(context, PageTransitions.slideFromRight(const ClassScreen())),
-                            ),
-                            _menuCard(
-                              context,
-                              title: 'اساتید',
-                              subtitle: '${provider.totalTeachers} استاد',
-                              icon: Icons.person_rounded,
-                              gradient: AppConstants.dangerGradient,
-                              onTap: () => Navigator.push(context, PageTransitions.slideFromRight(const TeacherScreen())),
-                            ),
-                            _menuCard(
-                              context,
-                              title: 'حضور و غیاب',
-                              subtitle: '${provider.presentCount} حاضر',
-                              icon: Icons.fact_check_rounded,
-                              gradient: AppConstants.oceanGradient,
-                              onTap: () => Navigator.push(context, PageTransitions.slideFromRight(const AttendanceScreen())),
-                            ),
-                            _menuCard(
-                              context,
-                              title: 'گزارش‌ها',
-                              subtitle: 'خروجی Excel',
-                              icon: Icons.analytics_rounded,
-                              gradient: AppConstants.sunsetGradient,
-                              onTap: () => Navigator.push(context, PageTransitions.slideFromRight(const ReportsScreen())),
-                            ),
-                            _menuCard(
-                              context,
-                              title: 'آمار اساتید',
-                              subtitle: 'تعداد دروس',
-                              icon: Icons.bar_chart_rounded,
-                              gradient: const LinearGradient(colors: [Colors.teal, Colors.green]),
-                              onTap: () => Navigator.push(context, PageTransitions.slideFromRight(const TeacherStatsScreen())),
-                            ),
-                            _menuCard(
-                              context,
-                              title: 'تنظیمات',
-                              subtitle: 'مدیریت و تم',
-                              icon: Icons.settings_rounded,
-                              gradient: AppConstants.purpleGradient,
-                              onTap: () => Navigator.push(context, PageTransitions.slideFromRight(const SettingsScreen())),
-                            ),
+                            _menuCard(context, title: 'برنامه کلاس‌ها', subtitle: 'نمای هفتگی', icon: Icons.calendar_month_rounded, gradient: AppConstants.primaryGradient, onTap: () => Navigator.push(context, PageTransitions.slideFromRight(const ScheduleScreen()))),
+                            _menuCard(context, title: 'کلاس‌ها', subtitle: '${provider.totalClassrooms} کلاس', icon: Icons.meeting_room_rounded, gradient: AppConstants.successGradient, onTap: () => Navigator.push(context, PageTransitions.slideFromRight(const ClassScreen()))),
+                            _menuCard(context, title: 'اساتید', subtitle: '${provider.totalTeachers} استاد', icon: Icons.person_rounded, gradient: AppConstants.dangerGradient, onTap: () => Navigator.push(context, PageTransitions.slideFromRight(const TeacherScreen()))),
+                            _menuCard(context, title: 'حضور و غیاب', subtitle: '${provider.presentCount} حاضر', icon: Icons.fact_check_rounded, gradient: AppConstants.oceanGradient, onTap: () => Navigator.push(context, PageTransitions.slideFromRight(const AttendanceScreen()))),
+                            _menuCard(context, title: 'گزارش‌ها', subtitle: 'خروجی Excel', icon: Icons.analytics_rounded, gradient: AppConstants.sunsetGradient, onTap: () => Navigator.push(context, PageTransitions.slideFromRight(const ReportsScreen()))),
+                            _menuCard(context, title: 'آمار اساتید', subtitle: 'تعداد دروس', icon: Icons.bar_chart_rounded, gradient: const LinearGradient(colors: [Colors.teal, Colors.green]), onTap: () => Navigator.push(context, PageTransitions.slideFromRight(const TeacherStatsScreen()))),
+                            _menuCard(context, title: 'تنظیمات', subtitle: 'مدیریت و تم', icon: Icons.settings_rounded, gradient: AppConstants.purpleGradient, onTap: () => Navigator.push(context, PageTransitions.slideFromRight(const SettingsScreen()))),
                           ]),
                         ),
                       ),
                       const SliverToBoxAdapter(
                         child: Padding(
                           padding: EdgeInsets.only(top: 10, bottom: 30),
-                          child: Center(
-                            child: Text(
-                              'طراحی و توسعه: مسعود خسروی',
-                              style: TextStyle(color: Colors.grey, fontSize: 13, fontWeight: FontWeight.bold),
-                            ),
-                          ),
+                          child: Center(child: Text('طراحی و توسعه: مسعود خسروی', style: TextStyle(color: Colors.grey, fontSize: 13, fontWeight: FontWeight.bold))),
                         ),
                       ),
                     ],
                   ),
                 ),
-                LoadingOverlay(
-                  isLoading: provider.isLoading,
-                  message: provider.statusMessage,
-                  progress: provider.loadingProgress > 0 ? provider.loadingProgress : null,
-                ),
+                LoadingOverlay(isLoading: provider.isLoading, message: provider.statusMessage, progress: provider.loadingProgress > 0 ? provider.loadingProgress : null),
               ],
             );
           },
@@ -147,31 +87,13 @@ class HomeScreen extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 48, 20, 24),
-      decoration: const BoxDecoration(
-        gradient: AppConstants.primaryGradient,
-        borderRadius: BorderRadius.only(bottomLeft: Radius.circular(32), bottomRight: Radius.circular(32)),
-      ),
+      decoration: const BoxDecoration(gradient: AppConstants.primaryGradient, borderRadius: BorderRadius.only(bottomLeft: Radius.circular(32), bottomRight: Radius.circular(32))),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(16)),
-            child: const Icon(Icons.school_rounded, color: Colors.white, size: 28),
-          ),
+          Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(16)), child: const Icon(Icons.school_rounded, color: Colors.white, size: 28)),
           const SizedBox(width: 12),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('سامانه مدیریت کلاس‌ها', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-                Text('حضور و غیاب اساتید', style: TextStyle(color: Colors.white70, fontSize: 13)),
-              ],
-            ),
-          ),
-          IconButton(
-            onPressed: themeProvider.toggleTheme,
-            icon: Icon(themeProvider.isDarkMode ? Icons.light_mode_rounded : Icons.dark_mode_rounded, color: Colors.white),
-          ),
+          const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('سامانه مدیریت کلاس‌ها', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)), Text('حضور و غیاب اساتید', style: TextStyle(color: Colors.white70, fontSize: 13))])),
+          IconButton(onPressed: themeProvider.toggleTheme, icon: Icon(themeProvider.isDarkMode ? Icons.light_mode_rounded : Icons.dark_mode_rounded, color: Colors.white)),
         ],
       ),
     );
@@ -182,53 +104,29 @@ class HomeScreen extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
       child: Column(
         children: [
-          Row(
-            children: [
-              Expanded(child: StatCard(label: 'کلاس‌ها', value: provider.totalClassrooms.toString(), icon: Icons.meeting_room_rounded, color: AppConstants.primaryColor)),
-              const SizedBox(width: 12),
-              Expanded(child: StatCard(label: 'دروس', value: provider.totalCourses.toString(), icon: Icons.book_rounded, color: AppConstants.accentColor)),
-            ],
-          ),
+          Row(children: [
+            Expanded(child: StatCard(label: 'کلاس‌ها', value: provider.totalClassrooms.toString(), icon: Icons.meeting_room_rounded, color: AppConstants.primaryColor)),
+            const SizedBox(width: 12),
+            Expanded(child: StatCard(label: 'دروس', value: provider.totalCourses.toString(), icon: Icons.book_rounded, color: AppConstants.accentColor)),
+          ]),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(child: StatCard(label: 'حاضر', value: provider.presentCount.toString(), icon: Icons.check_circle_rounded, color: AppConstants.successColor)),
-              const SizedBox(width: 12),
-              Expanded(child: StatCard(label: 'غایب', value: provider.absentCount.toString(), icon: Icons.cancel_rounded, color: AppConstants.dangerColor)),
-            ],
-          ),
+          Row(children: [
+            Expanded(child: StatCard(label: 'حاضر', value: provider.presentCount.toString(), icon: Icons.check_circle_rounded, color: AppConstants.successColor)),
+            const SizedBox(width: 12),
+            Expanded(child: StatCard(label: 'غایب', value: provider.absentCount.toString(), icon: Icons.cancel_rounded, color: AppConstants.dangerColor)),
+          ]),
         ],
       ),
     );
   }
 
   Widget _menuCard(BuildContext context, {required String title, required String subtitle, required IconData icon, required Gradient gradient, required VoidCallback onTap}) {
-    return GradientCard(
-      gradient: gradient,
-      onTap: onTap,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Icon(icon, color: Colors.white, size: 34),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 4),
-              Text(subtitle, style: const TextStyle(color: Colors.white70, fontSize: 11)),
-            ],
-          ),
-        ],
-      ),
-    );
+    return GradientCard(gradient: gradient, onTap: onTap, child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Icon(icon, color: Colors.white, size: 34), Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)), const SizedBox(height: 4), Text(subtitle, style: const TextStyle(color: Colors.white70, fontSize: 11))])]));
   }
 
   void _showSnack(BuildContext context, String msg, Color color) {
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg), backgroundColor: color, behavior: SnackBarBehavior.floating, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), margin: const EdgeInsets.all(16)),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg), backgroundColor: color, behavior: SnackBarBehavior.floating, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), margin: const EdgeInsets.all(16)));
   }
 
   Future<void> _pickFiles(BuildContext context) async {
