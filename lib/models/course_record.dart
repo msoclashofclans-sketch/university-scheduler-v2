@@ -37,8 +37,6 @@ class CourseRecord {
     return parts.join(' | ');
   }
 
-  String get shortText => '$courseName\n$teacher';
-
   Map<String, dynamic> toMap() => {
         'id': id,
         'day': day,
@@ -55,21 +53,20 @@ class CourseRecord {
         'source_row': sourceRow,
       };
 
-  // 🚨 این بخش امن شده است تا دیتابیس به هیچ وجه Null برنگرداند
   factory CourseRecord.fromMap(Map<String, dynamic> map) => CourseRecord(
-        id: map['id'] as int?,
-        day: (map['day'] as String?) ?? '',
-        timeSlot: (map['time_slot'] as String?) ?? '',
-        classroom: (map['classroom'] as String?) ?? '',
-        weekType: (map['week_type'] as String?) ?? 'عادی',
-        courseName: (map['course_name'] as String?) ?? '',
-        teacher: (map['teacher'] as String?) ?? '',
-        studentCount: (map['student_count'] as String?) ?? '',
-        group: (map['group_name'] as String?) ?? '',
-        courseCode: (map['course_code'] as String?) ?? '',
-        field: (map['field'] as String?) ?? '',
-        semester: (map['semester'] as String?) ?? '',
-        sourceRow: (map['source_row'] as int?) ?? 0,
+        id: map['id'] as int? ?? 0,
+        day: map['day']?.toString() ?? '',
+        timeSlot: map['time_slot']?.toString() ?? '',
+        classroom: map['classroom']?.toString() ?? '',
+        weekType: map['week_type']?.toString() ?? 'عادی',
+        courseName: map['course_name']?.toString() ?? '',
+        teacher: map['teacher']?.toString() ?? '',
+        studentCount: map['student_count']?.toString() ?? '',
+        group: map['group_name']?.toString() ?? '',
+        courseCode: map['course_code']?.toString() ?? '',
+        field: map['field']?.toString() ?? '',
+        semester: map['semester']?.toString() ?? '',
+        sourceRow: map['source_row'] as int? ?? 0,
       );
 
   String get uniqueKey =>
