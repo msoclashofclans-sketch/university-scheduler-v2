@@ -5,17 +5,16 @@ import '../models/course_record.dart';
 import '../utils/constants.dart';
 
 class ExcelReaderService {
-  // 🚨 تنظیم دقیق ستون‌ها بر اساس فایل پایتون (app_core.py)
-  // در Dart، شماره ستون‌ها از صفر شروع می‌شود، پس عدد پایتون منهای یک می‌شود
-  static const int colStudentCount = 1;      // B
-  static const int colSchedule = 5;          // F
-  static const int colTeacherFamily = 6;     // G
-  static const int colTeacherName = 7;       // H
-  static const int colGroup = 15;            // P
-  static const int colCourseName = 16;       // Q
-  static const int colCourseCode = 17;       // R
-  static const int colSemester = 18;         // S
-  static const int colField = 19;            // T
+  // ستون‌های دقیق بر اساس فایل پایتون
+  static const int colStudentCount = 1;
+  static const int colSchedule = 5;
+  static const int colTeacherFamily = 6;
+  static const int colTeacherName = 7;
+  static const int colGroup = 15;
+  static const int colCourseName = 16;
+  static const int colCourseCode = 17;
+  static const int colSemester = 18;
+  static const int colField = 19;
 
   Future<List<Classroom>> readClassrooms(File file) async {
     final bytes = file.readAsBytesSync();
@@ -35,14 +34,9 @@ class ExcelReaderService {
         final value = _cellValue(cell);
         if (value == null || value.isEmpty) continue;
 
-        if (_looksLikeClassName(value)) {
-          className = _normalizeClassName(value);
-        }
-
+        if (_looksLikeClassName(value)) className = _normalizeClassName(value);
         final num = int.tryParse(value.replaceAll(',', ''));
-        if (num != null && num > 0 && num <= 500) {
-          capacity = num;
-        }
+        if (num != null && num > 0 && num <= 500) capacity = num;
       }
 
       if (className != null && capacity != null) {
@@ -51,9 +45,7 @@ class ExcelReaderService {
     }
 
     final unique = <String, Classroom>{};
-    for (final c in classrooms) {
-      unique[c.normalizedName] = c;
-    }
+    for (final c in classrooms) unique[c.normalizedName] = c;
     return unique.values.toList();
   }
 
@@ -109,7 +101,6 @@ class ExcelReaderService {
           ));
         }
       } catch (e) {
-        // اگر ردیفی خراب بود، از آن رد شو
         continue;
       }
     }
@@ -194,7 +185,6 @@ class ExcelReaderService {
     return prefixes.any(normalized.startsWith);
   }
 
-  // 🚨 استخراج امن مقدار سلول (متن یا عدد)
   String? _cellValue(Data? cell) {
     if (cell == null) return null;
     final v = cell.value;
