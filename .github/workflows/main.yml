@@ -31,7 +31,7 @@ jobs:
           
           flutter pub get
           
-          # 🚨 حذف کامل و بی‌رحمانه خط NDK از تمام فایل‌های گریدل
+          # 🚨 حذف کامل خطوط مربوط به NDK از تمام فایل‌های گریدل
           find android -name "build.gradle*" -exec sed -i '/ndkVersion/d' {} +
           find android -name "build.gradle*" -exec sed -i '/ndkPath/d' {} +
           
